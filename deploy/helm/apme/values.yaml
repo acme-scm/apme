@@ -1,8 +1,8 @@
+---
 # APME Helm Chart — default values
 # See ADR-054 for architecture rationale.
 # The engine stack (Primary + validators + Galaxy Proxy) runs as sidecars in
 # a single pod, preserving ADR-005 localhost networking and ADR-012 pod scaling.
-
 image:
   # Default registry to *pull* APME images from. CI always publishes to
   # ghcr.io/ansible and also publishes to quay.io/ansible when Quay
@@ -14,13 +14,11 @@ image:
   # appVersion). Corresponds to GitHub release v2026.7.3; Quay/GHCR
   # release tags omit the leading "v". Override with a SHA tag
   # (e.g. "sha-b7d1683") for unreleased builds.
-  tag: "2026.7.3"
+  tag: 2026.7.3
   pullPolicy: IfNotPresent
-
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
 # -- Engine stack (Primary + all validators + Galaxy Proxy)
 engine:
   replicas: 1
@@ -99,19 +97,15 @@ engine:
   #         matchLabels:
   #           app.kubernetes.io/component: engine
   topologySpreadConstraints: []
-
 # -- Gitleaks is optional (requires external binary in the image)
 gitleaks:
   enabled: true
-
 # -- Collection Health validator
 collectionHealth:
   enabled: true
-
 # -- Dependency Audit validator
 depAudit:
   enabled: true
-
 # -- Gateway (REST + gRPC reporting + SQLite persistence)
 gateway:
   replicas: 1
@@ -132,7 +126,6 @@ gateway:
     enabled: false
     githubRepo: ""
     githubToken: ""
-
 # -- UI (nginx-served React SPA)
 # Default: standalone SPA (ADR-030 Option A). For portal / backend-only
 # installs (ADR-030 Option B), use the named profile:
@@ -156,7 +149,6 @@ ui:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-
 # -- Abbenay AI provider (optional)
 # Abbenay is a unified AI daemon supporting 19+ LLM engines via the Vercel
 # AI SDK.  Configure one or more providers below — the chart generates
@@ -229,7 +221,6 @@ abbenay:
   #       claude-sonnet-4-6: {}
   #
   providers: {}
-
   # -- GCP credentials for vertex-anthropic engine (ADC authentication).
   # Only needed when a provider uses engine: vertex-anthropic without a
   # base_url/apiKey (i.e. direct Vertex AI, not a proxy).
@@ -248,7 +239,6 @@ abbenay:
     limits:
       cpu: "2"
       memory: 2Gi
-
 # -- Persistent volume claims
 persistence:
   sessions:
@@ -263,7 +253,6 @@ persistence:
     size: 10Gi
     storageClass: ""
     accessMode: ReadWriteOnce
-
 # -- Ingress for Gateway REST API and UI
 ingress:
   enabled: false
@@ -279,7 +268,6 @@ ingress:
           pathType: Prefix
           service: ui
   tls: []
-
 # -- OpenShift Route (alternative to Ingress for OCP clusters)
 # Set route.host to serve the UI and API on the same domain (e.g.
 # "apme.apps.ocp.example.com").  When host is empty, OpenShift
@@ -296,7 +284,6 @@ route:
     # without custom container builds.
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
-
 # -- Horizontal Pod Autoscaler for the engine Deployment
 autoscaling:
   enabled: false
@@ -304,28 +291,22 @@ autoscaling:
   maxReplicas: 5
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
-
 # -- Network policies for inter-service traffic (OCP clusters with default-deny)
 networkPolicy:
   enabled: false
-
 # -- PodDisruptionBudgets (protect availability during node drains)
 podDisruptionBudget:
   enabled: false
   minAvailable: 1
-
 serviceAccount:
   create: true
   annotations: {}
   name: ""
-
 podAnnotations: {}
-
 # -- Pod-level security context.
 # Defaults to empty so OCP restricted-v2 SCC can inject its own UID/GID range.
 # For vanilla Kubernetes set: podSecurityContext: { fsGroup: 1001 }
 podSecurityContext: {}
-
 # -- Container-level security context.
 # Defaults to empty so OCP restricted-v2 SCC can inject its own UID/GID range.
 # For vanilla Kubernetes set: securityContext: { runAsNonRoot: true, runAsUser: 1001 }
