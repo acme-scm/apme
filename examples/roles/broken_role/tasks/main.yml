@@ -4,39 +4,41 @@
 # L024: Task without name
 # L035: Unnecessary set_fact
 # L039: Undefined variable
-
 # L024: Task without name
-- yum:
+
+- ansible.builtin.yum:
     name: "{{ package_name }}"
     state: present
-
 # Task references undefined variable
+
 - name: Use undefined variable
   ansible.builtin.debug:
-    msg: "Value is {{ undefined_var }}"  # L039: undefined_var not defined
-
+    msg: Value is {{ undefined_var }} # L039: undefined_var not defined
 # L035: Unnecessary set_fact - just assigns existing var
-- name: unnecessary set fact
+
+- name: Unnecessary set fact
   ansible.builtin.set_fact:
     new_var: "{{ existing_var }}"
-
 # L032: Changed data dependence
-- name: run command and register
-  ansible.builtin.command: date
+
+- name: Run command and register
+  ansible.builtin.command:
+    cmd: date
+  changed_when: false
   register: date_result
 
-- name: use changed incorrectly
+- name: Use changed incorrectly
   ansible.builtin.debug:
-    msg: "Date changed"
-  when: date_result.changed  # Command always "changes"
-
+    msg: Date changed
+  when: date_result.changed # Command always "changes"
 # Using short module name
-- name: install package
-  yum:  # L026: Should be ansible.builtin.yum
+
+- name: Install package
+  ansible.builtin.yum: # L026: Should be ansible.builtin.yum
     name: httpd
     state: present
-
 # L038: Unresolved role include
-- name: include nonexistent role
+
+- name: Include nonexistent role
   ansible.builtin.include_role:
     name: nonexistent_role
