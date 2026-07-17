@@ -7,45 +7,46 @@
   become: true
   tasks:
     # Tab-indented task (tabs → 2-space)
-    - ansible.builtin.shell: echo "tabbed"
-	    name: Tabbed task
 
-    # Misordered keys: module before name
-    - ansible.builtin.debug:
-        msg: "hello world"
-      name: Say hello
+    - name: Tabbed task
+      # Misordered keys: module before name
+      ansible.builtin.shell: echo "tabbed"
+
+    - name: Say hello
+      ansible.builtin.debug:
+        msg: hello world
       when: ansible_os_family == "Debian"
       tags:
         - greet
-
     # Jinja spacing: no spaces
+
     - name: No jinja spaces
       ansible.builtin.debug:
-        msg: "{{inventory_hostname}}"
-
+        msg: "{{ inventory_hostname }}"
     # Jinja spacing: extra spaces
+
     - name: Extra jinja spaces
       ansible.builtin.debug:
-        msg: "{{  some_var  }}"
-
+        msg: "{{ some_var }}"
     # Jinja with filter (complex expression)
+
     - name: Jinja with filter
       ansible.builtin.debug:
-        msg: "{{item.name | default('none')}}"
-
+        msg: "{{ item.name | default('none') }}"
     # Already correct — should not change
+
     - name: Already clean
       ansible.builtin.debug:
         msg: "{{ foo }}"
-
     # Octal mode — must be preserved
+
     - name: Set permissions
       ansible.builtin.file:
         path: /tmp/testfile
         mode: "0644"
         state: touch
-
     # Inline comment preservation
-    - name: With inline comment  # keep this
+
+    - name: With inline comment # keep this
       ansible.builtin.command: whoami
       changed_when: false
