@@ -3,6 +3,5 @@ common_packages:
   - curl
   - jq
   - unzip
-
 ntp_enabled: true
 ntp_server: pool.ntp.org

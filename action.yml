@@ -17,18 +17,17 @@ description: >
 branding:
   icon: shield
   color: red
-
 inputs:
   target:
     description: Path to scan (file, directory, or project root)
     required: false
-    default: "."
+    default: .
   ansible-version:
-    description: "ansible-core version to validate against (e.g. 2.18, 2.20)"
+    description: ansible-core version to validate against (e.g. 2.18, 2.20)
     required: false
     default: ""
   collections:
-    description: "Space-separated collection specs (e.g. community.general:9.0.0)"
+    description: Space-separated collection specs (e.g. community.general:9.0.0)
     required: false
     default: ""
   args:
@@ -36,7 +35,7 @@ inputs:
     required: false
     default: ""
   primary-address:
-    description: "Primary gRPC address for the hosted APME deployment (host:port)"
+    description: Primary gRPC address for the hosted APME deployment (host:port)
     required: true
   sarif:
     description: Upload SARIF to GitHub Code Scanning (requires security-events:write)
@@ -56,7 +55,6 @@ inputs:
       Defaults to latest release when empty.
     required: false
     default: ""
-
 outputs:
   exit-code:
     description: "APME exit code: 0=clean, 1=violations, 2=error"
@@ -67,14 +65,12 @@ outputs:
   sarif-path:
     description: Path to SARIF file (if generated)
     value: ${{ steps.scan.outputs.sarif-path }}
-
 runs:
   using: composite
   steps:
     # ── Install CLI ───────────────────────────────────────────────────
     - name: Set up uv
       uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6
-
     - name: Install APME CLI
       shell: bash
       run: |
@@ -83,7 +79,6 @@ runs:
           pkg="apme-engine==${{ inputs.cli-version }}"
         fi
         uv pip install --system "$pkg"
-
     # ── Run the scan ──────────────────────────────────────────────────
     - name: Run APME scan
       id: scan
@@ -110,22 +105,18 @@ runs:
           # shellcheck disable=SC2086
           CLI_ARGS+=($APME_EXTRA_ARGS)
         fi
-
         rc=0
         update_rc() { local new_rc="$1"; [ "$new_rc" -gt "$rc" ] && rc="$new_rc"; }
-
         needs_json=false
         needs_sarif=false
         if [ "$APME_ARTIFACT" = "true" ] || [ "$APME_COMMENT" = "true" ]; then
           needs_json=true
         fi
         [ "$APME_SARIF" = "true" ] && needs_sarif=true
-
         if [ "$needs_json" = "true" ]; then
           # Single scan producing JSON; derive SARIF from it if needed
           apme check "$APME_TARGET" --json "${CLI_ARGS[@]}" > apme-results.json 2>apme-stderr.log || update_rc $?
           [ -s apme-stderr.log ] && cat apme-stderr.log >&2
-
           # Strip large diff payloads when artifact upload is disabled.
           # Heredoc avoids any dependency on surrounding shell indentation —
           # the Python body is delivered verbatim at column 0 (Copilot review).
@@ -142,7 +133,6 @@ runs:
               [ -s apme-strip-stderr.log ] && cat apme-strip-stderr.log >&2
             }
           fi
-
           if [ "$needs_sarif" = "true" ] && [ -s apme-results.json ]; then
             if python3 - > apme.sarif 2>apme-sarif-stderr.log <<'PY'; then
         import json
@@ -173,9 +163,7 @@ runs:
           # Plain run if neither machine-readable format was requested
           apme check "$APME_TARGET" "${CLI_ARGS[@]}" || update_rc $?
         fi
-
         echo "exit-code=$rc" >> "$GITHUB_OUTPUT"
-
         # Extract violation count from machine-readable output.
         # In plain mode no JSON/SARIF file is produced, so leave the count
         # empty rather than incorrectly reporting zero violations.
@@ -187,9 +175,7 @@ runs:
           count=""
         fi
         echo "violation-count=$count" >> "$GITHUB_OUTPUT"
-
         exit 0
-
     # ── Upload results ────────────────────────────────────────────────
     - name: Upload SARIF to Code Scanning
       if: inputs.sarif == 'true' && steps.scan.outputs.sarif-path != ''
@@ -198,7 +184,6 @@ runs:
         sarif_file: ${{ steps.scan.outputs.sarif-path }}
         category: apme
       continue-on-error: true
-
     - name: Upload JSON artifact
       if: inputs.upload-artifact == 'true' && hashFiles('apme-results.json') != ''
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -206,7 +191,6 @@ runs:
         name: apme-results
         path: apme-results.json
         retention-days: 30
-
     - name: Post PR summary comment
       if: inputs.comment == 'true' && github.event_name == 'pull_request' && hashFiles('apme-results.json') != '' && steps.scan.outputs.exit-code != '2'
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
@@ -216,23 +200,19 @@ runs:
           const results = JSON.parse(fs.readFileSync('apme-results.json', 'utf8'));
           const count = results.count || 0;
           const violations = results.violations || [];
-
           const marker = '<!-- apme-pr-summary -->';
           const icon = count === 0 ? ':white_check_mark:' : ':warning:';
           const status = count === 0 ? 'No violations found' : `${count} violation(s) found`;
-
           const bySeverity = {};
           for (const v of violations) {
             const sev = v.severity || 'unknown';
             bySeverity[sev] = (bySeverity[sev] || 0) + 1;
           }
-
           const byRule = {};
           for (const v of violations) {
             const id = v.rule_id || 'unknown';
             byRule[id] = (byRule[id] || 0) + 1;
           }
-
           let severityTable = '';
           if (count > 0) {
             const rows = Object.entries(bySeverity)
@@ -241,7 +221,6 @@ runs:
               .join('\n');
             severityTable = `\n| Severity | Count |\n|----------|-------|\n${rows}\n`;
           }
-
           let ruleSection = '';
           if (count > 0) {
             const topRules = Object.entries(byRule)
@@ -251,15 +230,12 @@ runs:
               .join('\n');
             ruleSection = `\n<details><summary>Top rules triggered</summary>\n\n| Rule | Count |\n|------|-------|\n${topRules}\n\n</details>\n`;
           }
-
           const remSummary = results.remediation_summary || {};
           let remSection = '';
           if (count > 0 && (remSummary.auto_fixable || remSummary.ai_candidate || remSummary.manual_review)) {
             remSection = `\n**Remediation:** ${remSummary.auto_fixable || 0} auto-fixable, ${remSummary.ai_candidate || 0} AI candidate, ${remSummary.manual_review || 0} manual review\n`;
           }
-
           const body = `${marker}\n## ${icon} APME Scan: ${status}\n\n*Mode: hosted*\n${severityTable}${remSection}${ruleSection}\n---\n*Scanned by [APME](https://github.com/ansible/apme) (full stack: all validators + Gitleaks + collection health + dependency audit)*`;
-
           const comments = await github.paginate(github.rest.issues.listComments, {
             owner: context.repo.owner,
             repo: context.repo.repo,
@@ -267,7 +243,6 @@ runs:
             per_page: 100,
           });
           const existing = comments.find(c => c.body && c.body.includes(marker));
-
           if (existing) {
             await github.rest.issues.updateComment({
               owner: context.repo.owner,
@@ -284,7 +259,6 @@ runs:
             });
           }
       continue-on-error: true
-
     - name: Set final exit code
       if: steps.scan.outputs.exit-code != '0'
       shell: bash
