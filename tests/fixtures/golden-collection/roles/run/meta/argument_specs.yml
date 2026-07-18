@@ -1,6 +1,5 @@
 ---
 # argument spec file for testns.testcol.run
-
 argument_specs:
   main:
     short_description: Role description.
@@ -8,4 +7,4 @@ argument_specs:
       run_my_variable:
         type: str
         description: A simple string argument for demonstration.
-        default: "default_value"
+        default: default_value
