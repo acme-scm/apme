@@ -4,7 +4,7 @@
     src: nginx.conf.j2
     dest: "{{ nginx_config_dir }}/nginx.conf"
     mode: "0644"
-    validate: "nginx -t -c %s"
+    validate: nginx -t -c %s
   notify: reload nginx
 
 - name: Deploy application vhost
