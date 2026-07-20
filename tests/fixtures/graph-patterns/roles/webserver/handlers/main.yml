@@ -1,22 +1,19 @@
 # Edge types: notify (handler→handler chaining)
 ---
-- name: reload nginx
+- name: Reload nginx
   ansible.builtin.service:
     name: nginx
     state: reloaded
   notify: verify nginx config
-
-- name: restart nginx
+- name: Restart nginx
   ansible.builtin.service:
     name: nginx
     state: restarted
   notify: verify nginx config
-
-- name: verify nginx config
+- name: Verify nginx config
   ansible.builtin.command: nginx -t
   changed_when: false
-
-- name: restart ntp
+- name: Restart ntp
   ansible.builtin.service:
     name: ntpd
     state: restarted
