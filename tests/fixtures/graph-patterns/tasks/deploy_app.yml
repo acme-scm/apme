@@ -7,14 +7,12 @@
     state: directory
     owner: "{{ app_user }}"
     mode: "0755"
-
 - name: Deploy application code
   ansible.builtin.git:
     repo: "{{ app_repo }}"
     dest: "{{ app_dir }}"
     version: "{{ app_version | default('main') }}"
   register: app_deploy
-
 - name: Record deployment revision
   ansible.builtin.set_fact:
     deployed_revision: "{{ app_deploy.after }}"

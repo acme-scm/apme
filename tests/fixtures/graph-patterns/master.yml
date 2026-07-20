@@ -4,6 +4,5 @@
 ---
 - name: Import infrastructure playbook
   ansible.builtin.import_playbook: site.yml
-
 - name: Import deployment playbook
   ansible.builtin.import_playbook: deploy.yml
