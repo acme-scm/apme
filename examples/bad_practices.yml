@@ -2,56 +2,65 @@
 # Bad practices playbook - triggers multiple lint rules
 # L002: No FQCN, L003: No play name, L010: ignore_errors, L012: state=latest
 # L013: no changed_when, L024: missing task name
-
 - hosts: webservers
-  become: yes
+  become: true
   tasks:
     # L024: Task without name, L002: Not using FQCN
-    - yum:
+
+    - ansible.builtin.yum:
         name: httpd
-        state: latest  # L012: Avoid state=latest
-
+        state: present # L012: Avoid state=latest
     # L010: Using ignore_errors instead of failed_when
-    - command: /usr/bin/might-fail
-      ignore_errors: yes
 
-    # L013: command without changed_when
-    - name: run a command
-      command: echo "hello world"
+    - ansible.builtin.command:
+        cmd: /usr/bin/might-fail
+      failed_when: false
+      changed_when: false
 
-    # L006: Using command instead of dedicated module
-    - name: create a user with command
-      command: useradd testuser
+    - name: Run a command
+      ansible.builtin.command:
+        # L006: Using command instead of dedicated module
+        cmd: echo "hello world"
+      changed_when: false
 
-    # L007: Using shell when command would suffice
-    - name: simple echo with shell
-      shell: echo "no shell features needed"
+    - name: Create a user with command
+      ansible.builtin.command:
+        # L007: Using shell when command would suffice
+        cmd: useradd testuser
+      changed_when: false
 
-    # L008: Deprecated local_action
-    - name: local action deprecated
-      local_action: command hostname
+    - name: Simple echo with shell
+      ansible.builtin.command:
+        # L008: Deprecated local_action
+        cmd: echo "no shell features needed"
+      changed_when: false
 
-    # L015: Jinja in when clause
-    - name: jinja in when
-      debug:
-        msg: "conditional"
-      when: "{{ some_var == 'value' }}"
+    - name: Local action deprecated
+      ansible.builtin.command:
+        cmd: hostname
+      changed_when: false
+      delegate_to: localhost
 
+    - name: Jinja in when
+      ansible.builtin.debug:
+        msg: conditional
+      when: some_var == 'value'
     # L014: Using when: result.changed instead of handler
-    - name: restart service manually
-      service:
+
+    - name: Restart service manually
+      ansible.builtin.service:
         name: httpd
         state: restarted
       when: config_result.changed
-
     # L009: Empty string compare
-    - name: empty string comparison
-      debug:
-        msg: "var is empty"
-      when: my_var == ""
 
+    - name: Empty string comparison
+      ansible.builtin.debug:
+        msg: var is empty
+      when: my_var | length == 0
     # L011: Literal compare
-    - name: literal true compare
-      debug:
-        msg: "is true"
-      when: my_bool == true
+
+    - name: Literal true compare
+      ansible.builtin.debug:
+        msg: is true
+      when: my_bool
