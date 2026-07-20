@@ -1,3 +1,4 @@
+---
 # Portal / backend-only install profile (ADR-030 Option B).
 #
 # Use when automation portal, RHDH/Backstage, or another external UI consumes
@@ -8,6 +9,5 @@
 #   helm install apme ./deploy/helm/apme/ -f ./deploy/helm/apme/values-portal.yaml
 #
 # Chart defaults remain standalone-friendly (ui.enabled: true in values.yaml).
-
 ui:
   enabled: false
