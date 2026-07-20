@@ -5,7 +5,6 @@
   ansible.builtin.dnf:
     name: epel-release
     state: present
-
 - name: Configure SELinux
   ansible.posix.selinux:
     state: enforcing
