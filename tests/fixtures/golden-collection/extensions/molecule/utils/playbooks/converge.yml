@@ -2,7 +2,6 @@
 - name: Shared integration test runner
   hosts: localhost
   gather_facts: false
-
   tasks:
     - name: Load the vars
       ansible.builtin.include_vars:
