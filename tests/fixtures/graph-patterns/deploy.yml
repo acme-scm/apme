@@ -3,7 +3,6 @@
 - name: Application deployment
   hosts: webservers
   become: true
-
   tasks:
     - name: Pull application image
       containers.podman.podman_image:
